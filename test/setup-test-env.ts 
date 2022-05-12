@@ -1,0 +1,4 @@
+import { installGlobals } from "@remix-run/cloudflare/installGlobals"
+import "@testing-library/jest-dom/extend-expect";
+
+installGlobals();
