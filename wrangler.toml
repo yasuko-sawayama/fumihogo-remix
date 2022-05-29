@@ -7,6 +7,10 @@ route = ""
 workers_dev = true
 compatibility_date = "2022-05-12"
 
+kv_namespaces = [
+  { binding = "FUMIHOGO_KV", id = "7355abfdfbdd4597bbcfab0af3a40f3f" }
+]
+
 [site]
 bucket = "./public"
 entry-point = "."
@@ -16,3 +20,5 @@ command = "npm run build"
 
 [build.upload]
 format="service-worker"
+
+
