@@ -5,6 +5,13 @@ export const loader: LoaderFunction = async () => {
   return "loader";
 };
 
+export function meta() {
+  return {
+    title: "小説",
+    description: "List of Pokemons",
+  };
+}
+
 export default function StoriesIndexRoute() {
   const data = useLoaderData();
 

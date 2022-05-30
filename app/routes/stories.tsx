@@ -1,10 +1,10 @@
 import { Outlet } from "@remix-run/react";
+import Layout from "../components/Layout/index";
 
 export default function StoriesRoute() {
   return (
-    <div>
-      <h1>小説一覧</h1>
+    <Layout title="小説">
       <Outlet />
-    </div>
+    </Layout>
   );
 }

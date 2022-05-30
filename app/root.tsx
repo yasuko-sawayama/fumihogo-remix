@@ -21,12 +21,12 @@ export function links() {
 
 export default function App() {
   return (
-    <html lang="ja">
+    <html lang="ja" className="h-full">
       <head>
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="h-full">
         <Outlet />
         <ScrollRestoration />
         <Scripts />
