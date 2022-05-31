@@ -17,6 +17,12 @@ export const action: ActionFunction = async ({ request }) => {
   return "ok";
 };
 
+export const handle = {
+  title: "新規作成",
+  // 新規作成ボタンが表示されないようにする
+  buttons: [],
+};
+
 export default function CreateStory() {
   const data = JSON.parse(useLoaderData());
 
