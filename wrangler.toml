@@ -8,7 +8,8 @@ workers_dev = true
 compatibility_date = "2022-05-12"
 
 kv_namespaces = [
-  { binding = "FUMIHOGO_KV", id = "7355abfdfbdd4597bbcfab0af3a40f3f" }
+  { binding = "FUMIHOGO_KV", id = "7355abfdfbdd4597bbcfab0af3a40f3f" },
+  { binding = "FUMIHOGO_SESSION", id = "f047a87a31184aa985f733177113d3b8" }
 ]
 
 [site]
@@ -20,5 +21,3 @@ command = "npm run build"
 
 [build.upload]
 format="service-worker"
-
-
