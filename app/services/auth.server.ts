@@ -1,3 +1,5 @@
+import { enc, HmacSHA1 } from "crypto-js";
+import OAuth from "oauth-1.0a";
 import { Authenticator } from "remix-auth";
 import { TwitterStrategy } from "remix-auth-twitter";
 import { sessionStorage } from "~/services/session.server";
@@ -37,19 +39,49 @@ authenticator.use(
       // includeEmail: true, // Optional parameter. Default: false.
     },
     // Define what to do when the user is authenticated
-    async ({ accessToken, accessTokenSecret, profile }) => {
-      // profile contains all the info from `account/verify_credentials`
-      // https://developer.twitter.com/en/docs/twitter-api/v1/accounts-and-users/manage-account-settings/api-reference/get-account-verify_credentials
-
-      console.log("profile", profile);
+    async ({ accessToken, accessTokenSecret }) => {
       // Return a user object to store in sessionStorage.
       // You can also throw Error to reject the login
       // Here we let everyone login, and filter fields to store in session
+
+      // remix-twitter-authではAPI Ver1.1のみ対応のため、ここでprofile取得
+      // twitter-api-v2はworkers上では動かないので自力で
+      const oauth = new OAuth({
+        consumer: { key: clientID, secret: clientSecret },
+        signature_method: "HMAC-SHA1",
+        hash_function(baseString, key) {
+          return HmacSHA1(baseString, key).toString(enc.Base64);
+        },
+      });
+
+      const oauthToken = {
+        key: accessToken,
+        secret: accessTokenSecret,
+      };
+
+      const usersMeUrl = new URL("https://api.twitter.com/2/users/me");
+      const params = {
+        "user.fields": "profile_image_url",
+      };
+      usersMeUrl.search = new URLSearchParams(params).toString();
+      const request = {
+        url: usersMeUrl.toString(),
+        method: "GET",
+      };
+      const response = await fetch(request.url, {
+        headers: {
+          ...oauth.toHeader(oauth.authorize(request, oauthToken)),
+          "Content-Type": "application/json",
+        },
+      });
+
+      const { data } = (await response.json()) as { data: User };
+
       return {
-        id: profile.id,
-        screen_name: profile.screen_name,
-        name: profile.name,
-        profile_image_url: profile.profile_image_url,
+        id: data.id,
+        screen_name: data.screen_name,
+        name: data.name,
+        profile_image_url: data.profile_image_url,
       };
     }
   ),
