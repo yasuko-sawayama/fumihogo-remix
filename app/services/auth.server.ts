@@ -1,8 +1,8 @@
-import { enc, HmacSHA1 } from "crypto-js";
-import OAuth from "oauth-1.0a";
 import { Authenticator } from "remix-auth";
 import { TwitterStrategy } from "remix-auth-twitter";
 import { sessionStorage } from "~/services/session.server";
+import { clientID, clientSecret } from "~/services/twitter.server";
+import { myProfile } from "./twitter.server";
 
 export type User = {
   id: number;
@@ -11,18 +11,6 @@ export type User = {
   profile_image_url: string;
   email?: string;
 };
-
-// These are cloudflare secret key
-declare const TWITTER_CONSUMER_KEY: string;
-declare const TWITTER_CONSUMER_SECRET: string;
-
-const clientID = TWITTER_CONSUMER_KEY;
-const clientSecret = TWITTER_CONSUMER_SECRET;
-if (!clientID || !clientSecret) {
-  throw new Error(
-    "TWITTER_CONSUMER_KEY and TWITTER_CONSUMER_SECRET must be provided"
-  );
-}
 
 // Create an instance of the authenticator, pass a generic with what
 // strategies will return and will store in the session
@@ -46,42 +34,19 @@ authenticator.use(
 
       // remix-twitter-authではAPI Ver1.1のみ対応のため、ここでprofile取得
       // twitter-api-v2はworkers上では動かないので自力で
-      const oauth = new OAuth({
-        consumer: { key: clientID, secret: clientSecret },
-        signature_method: "HMAC-SHA1",
-        hash_function(baseString, key) {
-          return HmacSHA1(baseString, key).toString(enc.Base64);
-        },
-      });
 
       const oauthToken = {
         key: accessToken,
         secret: accessTokenSecret,
       };
 
-      const usersMeUrl = new URL("https://api.twitter.com/2/users/me");
-      const params = {
-        "user.fields": "profile_image_url",
-      };
-      usersMeUrl.search = new URLSearchParams(params).toString();
-      const request = {
-        url: usersMeUrl.toString(),
-        method: "GET",
-      };
-      const response = await fetch(request.url, {
-        headers: {
-          ...oauth.toHeader(oauth.authorize(request, oauthToken)),
-          "Content-Type": "application/json",
-        },
-      });
-
-      const { data } = (await response.json()) as { data: User };
+      const profile = await myProfile(oauthToken);
 
       return {
-        id: data.id,
-        screen_name: data.screen_name,
-        name: data.name,
-        profile_image_url: data.profile_image_url,
+        id: profile.id,
+        screen_name: profile.screen_name,
+        name: profile.name,
+        profile_image_url: profile.profile_image_url,
       };
     }
   ),
