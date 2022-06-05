@@ -2,14 +2,14 @@ import { Form, useLoaderData } from "@remix-run/react";
 import type { ActionFunction, LoaderFunction } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
 import { authenticator } from "~/services/auth.server";
+import { draftKey, getDraft } from "../../services/story/draft.server";
 
-const draftKey = "draft";
 export const loader: LoaderFunction = async ({ request }) => {
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect: "/",
   });
 
-  const draft = await FUMIHOGO_KV.get(draftKey, { type: "text" });
+  const draft = await getDraft(draftKey(user));
   console.log("draft", draft);
 
   return json({
@@ -19,6 +19,10 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export const action: ActionFunction = async ({ request }) => {
+  const user = await authenticator.isAuthenticated(request);
+
+  if (!user) throw new Error("ログインしてください");
+
   const formData = await request.formData();
   console.log("formdata", formData);
 
@@ -26,7 +30,7 @@ export const action: ActionFunction = async ({ request }) => {
   const description = formData.get("description") as string;
   const content = formData.get("content") as string;
   const data = { title, description, content };
-  await FUMIHOGO_KV.put(draftKey, JSON.stringify(data));
+  await FUMIHOGO_KV.put(draftKey(user), JSON.stringify(data));
 
   return "ok";
 };
