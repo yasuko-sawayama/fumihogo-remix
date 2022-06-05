@@ -1,17 +1,31 @@
 import { Form, useLoaderData } from "@remix-run/react";
 import type { ActionFunction, LoaderFunction } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
+import { authenticator } from "~/services/auth.server";
 
 const draftKey = "draft";
-export const loader: LoaderFunction = async () => {
-  return json(await FUMIHOGO_KV.get(draftKey, { type: "text" }));
+export const loader: LoaderFunction = async ({ request }) => {
+  const user = await authenticator.isAuthenticated(request, {
+    failureRedirect: "/",
+  });
+
+  const draft = await FUMIHOGO_KV.get(draftKey, { type: "text" });
+  console.log("draft", draft);
+
+  return json({
+    draft,
+    user,
+  });
 };
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
+  console.log("formdata", formData);
+
   const title = (formData.get("title") as string) || "";
+  const description = formData.get("description") as string;
   const content = formData.get("content") as string;
-  const data = { title, content };
+  const data = { title, description, content };
   await FUMIHOGO_KV.put(draftKey, JSON.stringify(data));
 
   return "ok";
@@ -24,7 +38,10 @@ export const handle = {
 };
 
 export default function CreateStory() {
-  const data = JSON.parse(useLoaderData());
+  const data = useLoaderData();
+
+  console.log(data);
+  const draft = JSON.parse(data.draft);
 
   return (
     <Form method="post" className="space-y-8 divide-y divide-gray-200">
@@ -42,7 +59,7 @@ export default function CreateStory() {
           <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
             <div className="sm:col-span-6">
               <label
-                htmlFor="street-address"
+                htmlFor="title"
                 className="block text-sm font-medium text-gray-700"
               >
                 タイトル
@@ -50,16 +67,16 @@ export default function CreateStory() {
               <div className="mt-1">
                 <input
                   type="text"
-                  name="street-address"
-                  id="street-address"
-                  autoComplete="street-address"
+                  name="title"
+                  id="title"
+                  defaultValue={draft?.title}
                   className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
                 />
               </div>
             </div>
             <div className="sm:col-span-6">
               <label
-                htmlFor="about"
+                htmlFor="description"
                 className="block text-sm font-medium text-gray-700"
               >
                 概要
@@ -70,7 +87,7 @@ export default function CreateStory() {
                   name="description"
                   rows={3}
                   className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md"
-                  defaultValue={""}
+                  defaultValue={draft?.description}
                 />
               </div>
               <p className="mt-2 text-sm text-gray-500">
@@ -90,7 +107,7 @@ export default function CreateStory() {
             <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
               <div className="sm:col-span-6">
                 <label
-                  htmlFor=""
+                  htmlFor="content"
                   className="block text-sm font-medium text-gray-700"
                 >
                   本文
@@ -101,7 +118,7 @@ export default function CreateStory() {
                     name="content"
                     rows={3}
                     className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md"
-                    defaultValue={""}
+                    defaultValue={draft?.content}
                   />
                 </div>
                 <p className="mt-2 text-sm text-gray-500">
@@ -112,7 +129,8 @@ export default function CreateStory() {
 
             <input type="reset" value="変更を戻す" />
 
-            <button>保存</button>
+            <button type="submit">保存</button>
+            <button type="submit">TODO: 作成する</button>
           </div>
         </div>
       </div>
