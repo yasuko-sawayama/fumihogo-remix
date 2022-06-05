@@ -1,25 +1,30 @@
-import type { LoaderFunction } from "@remix-run/cloudflare";
+import type { LoaderFunction, MetaFunction } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
+import UserStoryList from "~/components/organisms/UserStoryList";
+import { authenticator } from "~/services/auth.server";
 
-export const loader: LoaderFunction = async () => {
-  return "loader";
+export const loader: LoaderFunction = async ({ request }) => {
+  const user = await authenticator.isAuthenticated(request, {
+    failureRedirect: "/",
+  });
+
+  return { user };
 };
 
-export function meta() {
+export const meta: MetaFunction = ({ data }) => {
+  const title = data.user ? `${data.user.name}さんの作品一覧` : "作品一覧";
   return {
-    title: "小説",
-    description: "List of Pokemons",
+    title,
+    description: "小説一覧",
   };
-}
+};
 
 export default function StoriesIndexRoute() {
-  const data = useLoaderData();
+  const { user } = useLoaderData();
 
   return (
     <div>
-      {data}
-      <p>Here's a random story:</p>
-      <p>I was wondering why the frisbee was getting bigger, then it hit me.</p>
+      <UserStoryList user={user} />
     </div>
   );
 }

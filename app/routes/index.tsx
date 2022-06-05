@@ -8,9 +8,11 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   return { user };
 };
+
 type LoaderData = {
   user: User | null;
 };
+
 export default function Index() {
   const { user } = useLoaderData<LoaderData>();
   return (

@@ -6,12 +6,19 @@ import { myProfile } from "./twitter.server";
 
 export type User = {
   id: number;
-  screen_name: string;
+  oauthToken: Token;
+} & Profile;
+
+export type Profile = {
   name: string;
   profile_image_url: string;
-  email?: string;
+  username: string;
 };
 
+type Token = {
+  key: string;
+  secret: string;
+};
 // Create an instance of the authenticator, pass a generic with what
 // strategies will return and will store in the session
 export let authenticator = new Authenticator<User>(sessionStorage);
@@ -35,7 +42,7 @@ authenticator.use(
       // remix-twitter-authではAPI Ver1.1のみ対応のため、ここでprofile取得
       // twitter-api-v2はworkers上では動かないので自力で
 
-      const oauthToken = {
+      const oauthToken: Token = {
         key: accessToken,
         secret: accessTokenSecret,
       };
@@ -44,9 +51,10 @@ authenticator.use(
 
       return {
         id: profile.id,
-        screen_name: profile.screen_name,
+        username: profile.username,
         name: profile.name,
         profile_image_url: profile.profile_image_url,
+        oauthToken,
       };
     }
   ),

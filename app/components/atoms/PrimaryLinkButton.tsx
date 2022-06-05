@@ -1,4 +1,4 @@
-import { Link, useLocation, useResolvedPath } from "@remix-run/react";
+import { Link } from "@remix-run/react";
 
 type Props = {
   to: string;
@@ -6,12 +6,12 @@ type Props = {
 };
 
 export default function PrimaryLinkButton({ to, children }: Props) {
-  const path = useResolvedPath(to);
+  /*   const path = useResolvedPath(to);
   const location = useLocation();
 
   console.log("path", path);
   console.log("location", location);
-  console.log("match", path.pathname === location.pathname);
+  console.log("match", path.pathname === location.pathname); */
   return (
     <button
       type="button"

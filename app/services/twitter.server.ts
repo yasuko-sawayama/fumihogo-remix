@@ -31,7 +31,7 @@ type OAuthToken = {
 
 export const myProfile = async (oauthToken: OAuthToken) => {
   const params = {
-    "user.fields": "profile_image_url",
+    "user.fields": "profile_image_url,username",
   };
   const url = new URL(usersMeUrl);
   url.search = new URLSearchParams(params).toString();

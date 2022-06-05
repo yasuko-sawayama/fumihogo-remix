@@ -1,9 +1,15 @@
 /* This example requires Tailwind CSS v2.0+ */
 
 import { useMatches } from "@remix-run/react";
+import type { Profile } from "~/services/auth.server";
 import NavBar from "../NavBar";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+type Props = {
+  children: React.ReactNode;
+  profile: Profile | null;
+};
+
+export default function Layout({ children, profile }: Props) {
   const matches = useMatches();
 
   const titleString = matches
@@ -20,7 +26,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <div className="min-h-full">
-        <NavBar />
+        <NavBar profile={profile} />
         <div className="py-10">
           {titleString ? (
             <header>
